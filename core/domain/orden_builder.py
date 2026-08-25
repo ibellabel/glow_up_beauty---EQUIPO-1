@@ -1,11 +1,13 @@
 from tienda.models import Orden
-
-
-class OrdenBuilderError(Exception):
-    pass
+from core.domain.reglas_negocio import validar_stock
+from core.domain.excepciones import OrdenBuilderError, StockInsuficienteError
 
 
 class OrdenBuilder:
+    """Patrón Builder: construye paso a paso la entidad más compleja del
+    sistema (Orden), garantizando que nunca se persista una orden inválida.
+    """
+
     def __init__(self):
         self._usuario = None
         self._productos = []
@@ -15,7 +17,7 @@ class OrdenBuilder:
         return self
 
     def con_productos(self, productos):
-        self._productos = productos
+        self._productos = list(productos)
         return self
 
     def _validar(self):
@@ -24,8 +26,8 @@ class OrdenBuilder:
         if not self._productos:
             raise OrdenBuilderError("La orden requiere al menos un producto.")
         for producto in self._productos:
-            if not producto.validarStock():
-                raise OrdenBuilderError(
+            if not validar_stock(producto):
+                raise StockInsuficienteError(
                     f"Sin stock suficiente para '{producto.nombre}'."
                 )
 

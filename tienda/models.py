@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 
@@ -17,17 +18,27 @@ class Usuario(models.Model):
         return self.nombre
 
 
+class Categoria(models.Model):
+    nombre = models.CharField(max_length=100, unique=True)
+    descripcion = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Categorías"
+
+    def __str__(self):
+        return self.nombre
+
+
 class Producto(models.Model):
     nombre = models.CharField(max_length=150)
     precio = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.IntegerField(default=0)
     marca = models.ForeignKey(Marca, on_delete=models.CASCADE, related_name="productos")
+    categoria = models.ForeignKey(
+        Categoria, on_delete=models.SET_NULL, null=True, blank=True, related_name="productos"
+    )
 
-    def validarStock(self):
-        return self.stock > 0
-
-    def calcularDescuento(self):
-        return self.precio  # placeholder, ajusta si tienes lógica real
+    
 
     def __str__(self):
         return self.nombre
@@ -44,20 +55,66 @@ class Orden(models.Model):
     fecha = models.DateTimeField(auto_now_add=True)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
-    def calcularTotal(self):
-        self.total = sum(p.precio for p in self.productos.all())
-        self.save()
-        return self.total
+    def marcar_como(self, estado: str) -> None:
+        """Único método permitido en el Model: es persistencia pura
+        (cambia y guarda un campo), no calcula ni decide nada de negocio."""
+        self.estado = estado
+        self.save(update_fields=["estado"])
 
-    def repartirComisionMarca(self):
-        # placeholder simple: imprime la comisión por marca involucrada
-        for producto in self.productos.all():
-            comision = producto.precio * (producto.marca.comisionPorcentaje / 100)
-            print(f"Comisión para {producto.marca.nombre}: {comision}")
-
-    def procesarPago(self):
-        # placeholder: aquí iría integración de pago real
-        print(f"Pago procesado para orden #{self.id} — total: {self.total}")
+    def guardar_total(self, total) -> None:
+        """Persistencia pura: guarda un total ya calculado por el Service Layer."""
+        self.total = total
+        self.save(update_fields=["total"])
 
     def __str__(self):
         return f"Orden #{self.id} - {self.estado}"
+
+
+class Pago(models.Model):
+   
+    ESTADOS_PAGO = [
+        ("APROBADO", "Aprobado"),
+        ("RECHAZADO", "Rechazado"),
+        ("PENDIENTE", "Pendiente"),
+    ]
+    orden = models.OneToOneField(Orden, on_delete=models.CASCADE, related_name="pago")
+    monto = models.DecimalField(max_digits=10, decimal_places=2)
+    metodo = models.CharField(max_length=50, default="TARJETA")
+    estado = models.CharField(max_length=20, choices=ESTADOS_PAGO, default="PENDIENTE")
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Pago #{self.id} - Orden #{self.orden_id} - {self.estado}"
+
+
+class Resena(models.Model):
+    
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="resenas")
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="resenas")
+    calificacion = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    comentario = models.CharField(max_length=500, blank=True)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("usuario", "producto")
+        verbose_name_plural = "Reseñas"
+
+    def __str__(self):
+        return f"Reseña de {self.usuario.nombre} a {self.producto.nombre} ({self.calificacion}/5)"
+
+
+class DireccionEnvio(models.Model):
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="direcciones")
+    calle = models.CharField(max_length=200)
+    ciudad = models.CharField(max_length=100)
+    codigoPostal = models.CharField(max_length=20, blank=True)
+    pais = models.CharField(max_length=100, default="Colombia")
+    esPrincipal = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name_plural = "Direcciones de envío"
+
+    def __str__(self):
+        return f"{self.calle}, {self.ciudad} ({self.usuario.nombre})"

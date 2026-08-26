@@ -1,4 +1,4 @@
-from tienda.models import Producto, Usuario
+from tienda.models import Categoria, DireccionEnvio, Producto, Resena, Usuario
 from core.domain.orden_builder import OrdenBuilder
 from core.domain.reglas_negocio import calcular_total_orden, calcular_comision_marca
 from core.domain.excepciones import UsuarioNoEncontradoError, ProductoNoEncontradoError
@@ -57,3 +57,43 @@ class OrdenService:
         if faltantes:
             raise ProductoNoEncontradoError(f"Productos no encontrados: {sorted(faltantes)}")
         return productos
+
+
+class ProductoService:
+    """Casos de uso del catalogo de productos."""
+
+    @staticmethod
+    def listar():
+        return Producto.objects.select_related("marca", "categoria").all()
+
+
+class CategoriaService:
+    """Casos de uso del catalogo de categorias."""
+
+    @staticmethod
+    def listar():
+        return Categoria.objects.all()
+
+
+class ResenaService:
+    """Casos de uso de consulta y creacion de resenas."""
+
+    @staticmethod
+    def listar():
+        return Resena.objects.select_related("usuario", "producto").all()
+
+    @staticmethod
+    def crear(datos):
+        return Resena.objects.create(**datos)
+
+
+class DireccionEnvioService:
+    """Casos de uso de consulta y creacion de direcciones de envio."""
+
+    @staticmethod
+    def listar():
+        return DireccionEnvio.objects.select_related("usuario").all()
+
+    @staticmethod
+    def crear(datos):
+        return DireccionEnvio.objects.create(**datos)

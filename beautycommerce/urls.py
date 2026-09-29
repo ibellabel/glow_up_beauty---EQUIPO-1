@@ -2,6 +2,9 @@ from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import path
 from tienda.views_web import home, categoria_detalle
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 from core.views import CrearOrdenView
 from tienda.views import (
@@ -40,3 +43,5 @@ urlpatterns = [
     path("api/direcciones/", DireccionEnvioListCreateView.as_view(), name="direcciones"),
     path("categoria/<int:categoria_id>/", categoria_detalle, name="categoria_detalle"),
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

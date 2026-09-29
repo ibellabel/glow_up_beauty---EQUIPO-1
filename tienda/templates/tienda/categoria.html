@@ -1,0 +1,32 @@
+{% extends "tienda/base.html" %}
+{% block content %}
+
+<section class="categoria-header">
+  <a href="{% url 'inicio' %}" class="volver">← Volver</a>
+  <h1>{{ categoria.nombre }}</h1>
+  {% if categoria.descripcion %}<p>{{ categoria.descripcion }}</p>{% endif %}
+</section>
+
+<section class="category-panel">
+  <div class="product-grid">
+    {% for producto in productos %}
+    <div class="product-card">
+      <div class="product-image-placeholder"></div>
+      <h3>{{ producto.nombre }}</h3>
+      <p class="price">${{ producto.precio }}</p>
+      {% if producto.rating_promedio %}
+        <p class="rating">★ {{ producto.rating_promedio|floatformat:1 }} ({{ producto.total_resenas }})</p>
+      {% else %}
+        <p class="rating rating-empty">Sin reseñas aún</p>
+      {% endif %}
+      {% if producto.mejor_resena %}
+        <p class="razon">"{{ producto.mejor_resena.comentario }}"</p>
+      {% endif %}
+    </div>
+    {% empty %}
+    <p class="empty">Todavía no hay productos en esta categoría.</p>
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock %}

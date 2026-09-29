@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>GlowHive</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'tienda/style.css' %}">
+</head>
+<body>
+  <header class="site-header">
+    <a href="/" class="logo">GlowHive</a>
+  </header>
+  <main>{% block content %}{% endblock %}</main>
+</body>
+</html>

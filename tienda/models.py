@@ -88,13 +88,13 @@ class Pago(models.Model):
 
 
 class Resena(models.Model):
-    
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="resenas")
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="resenas")
     calificacion = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
     comentario = models.CharField(max_length=500, blank=True)
+    es_creadora = models.BooleanField(default=False)  # NUEVO
     fecha = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -103,7 +103,6 @@ class Resena(models.Model):
 
     def __str__(self):
         return f"Reseña de {self.usuario.nombre} a {self.producto.nombre} ({self.calificacion}/5)"
-
 
 class DireccionEnvio(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="direcciones")

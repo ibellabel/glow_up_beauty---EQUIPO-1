@@ -1,0 +1,51 @@
+{% extends "tienda/base.html" %}
+{% load static %}
+{% block content %}
+
+<section class="hero-video">
+  <div class="hero-content">
+    <h1 class="hero-title">GlowHive</h1>
+    <p class="hero-tagline">Encuentra tu próximo producto favorito</p>
+  </div>
+</section>
+
+<section class="categorias">
+  {% for categoria in categorias %}
+  <a href="{% url 'categoria_detalle' categoria.id %}" class="categoria-btn">
+    {{ categoria.nombre }}
+  </a>
+  {% empty %}
+  <p class="empty">Aún no hay categorías creadas.</p>
+  {% endfor %}
+</section>
+
+<section class="frase-empoderamiento">
+  <p>"Tu piel, tu historia, tu brillo."</p>
+</section>
+
+<section class="top-semana">
+  <h2>Top 10 de la semana</h2>
+  <div class="top-grid">
+    {% for producto in top_productos %}
+    <div class="top-card">
+      <div class="top-rank">#{{ forloop.counter }}</div>
+      <div class="product-image-placeholder"></div>
+      <h3>{{ producto.nombre }}</h3>
+      <p class="price">${{ producto.precio }}</p>
+      {% if producto.rating_promedio %}
+        <p class="rating">★ {{ producto.rating_promedio|floatformat:1 }} ({{ producto.total_resenas }})</p>
+      {% endif %}
+      {% if producto.mejor_resena %}
+        <p class="razon">
+          {% if producto.mejor_resena.es_creadora %}<span class="badge">Creadora</span>{% endif %}
+          "{{ producto.mejor_resena.comentario }}"
+        </p>
+      {% endif %}
+    </div>
+    {% empty %}
+    <p class="empty">Todavía no hay productos.</p>
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock %}

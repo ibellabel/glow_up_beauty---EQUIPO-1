@@ -10,8 +10,8 @@ services:
     volumes:
       - .:/app
     environment:
-      - ENV_TYPE=MICROSERVICIO
       - NOTIFICACIONES_SERVICE_URL=http://flask_notificaciones:5000
+      - ENV_TYPE=MICROSERVICIO
     depends_on:
       - flask_notificaciones
 

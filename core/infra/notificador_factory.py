@@ -47,4 +47,4 @@ class NotificadorFactory:
             return HTTPNotificador()
         if env == "REAL":
             return EmailNotificador()
-            return ConsolaNotificador()
+        return ConsolaNotificador()
